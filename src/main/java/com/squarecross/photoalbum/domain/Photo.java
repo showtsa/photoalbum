@@ -13,19 +13,19 @@ public class Photo {
     @Column(name = "photo_id", unique = true, nullable = false)
     private Long photoId;
 
-    @Column(name = "file_name", unique = false, nullable = true)
+    @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "file_size", unique = false, nullable = true)
+    @Column(name = "file_size")
     private int fileSize;
 
-    @Column(name="original_url", unique = false, nullable = true)
+    @Column(name="original_url")
     private String originalUrl;
 
-    @Column(name="thumb_url", unique = false, nullable = true)
+    @Column(name="thumb_url")
     private String thumbUrl;
 
-    @Column(name="uploaded_at", unique = false, nullable = true)
+    @Column(name="uploaded_at")
     @CreationTimestamp
     private Date uploadedAt;
 
@@ -33,7 +33,7 @@ public class Photo {
     @JoinColumn(name="album_id")
     private Album album;
 
-    public Photo(){};
+    public Photo(){}
 
     public Long getPhotoId() {
         return photoId;
