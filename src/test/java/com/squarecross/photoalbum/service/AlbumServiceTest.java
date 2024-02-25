@@ -5,12 +5,20 @@ import com.squarecross.photoalbum.domain.Photo;
 import com.squarecross.photoalbum.dto.AlbumDto;
 import com.squarecross.photoalbum.repository.AlbumRepository;
 import com.squarecross.photoalbum.repository.PhotoRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
@@ -77,6 +85,60 @@ class AlbumServiceTest {
 
         assertThrows(EntityNotFoundException.class, () -> {
             albumService.getAlbumByAlbumName("테스트3");
+        });
+    }
+
+    @Test
+    void testAlbumRepository() throws InterruptedException {
+        Album album1 = new Album();
+        Album album2 = new Album();
+        album1.setAlbumName("aaaa");
+        album2.setAlbumName("aaab");
+
+        albumRepository.save(album1);
+        TimeUnit.SECONDS.sleep(1);
+        albumRepository.save(album2);
+
+        List<Album> resDate = albumRepository.findByAlbumNameContainingOrderByCreatedAtDesc("aaa");
+        assertEquals("aaab", resDate.get(0).getAlbumName());
+        assertEquals("aaaa", resDate.get(1).getAlbumName());
+        assertEquals(2, resDate.size());
+
+        List<Album> resName = albumRepository.findByAlbumNameContainingOrderByAlbumNameAsc("aaa");
+        assertEquals("aaab", resDate.get(0).getAlbumName());
+        assertEquals("aaaa", resDate.get(1).getAlbumName());
+        assertEquals(2, resDate.size());
+    }
+
+    @Test
+    void testChangeAlbumName() throws Exception {
+        AlbumDto albumDto = new AlbumDto();
+        albumDto.setAlbumName("변경 전");
+        AlbumDto res = albumService.createAlbum(albumDto);
+
+        Long albumId = res.getAlbumId();
+        AlbumDto updateDto = new AlbumDto();
+        updateDto.setAlbumName("변경 후");
+        albumService.changeName(albumId, updateDto);
+
+        AlbumDto updatedDto = albumService.getAlbum(albumId);
+
+        assertEquals("변경 후", updatedDto.getAlbumName());
+    }
+
+    @Test
+    void testDeleteAlbum() throws Exception {
+        AlbumDto albumDto = new AlbumDto();
+        albumDto.setAlbumName("테스트앨범");
+        AlbumDto res = albumService.createAlbum(albumDto);
+
+        assertEquals("테스트앨범", res.getAlbumName());
+
+        Long albumId = res.getAlbumId();
+        albumService.deleteAlbum(albumId);
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            albumService.getAlbum(albumId);
         });
     }
 }

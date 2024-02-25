@@ -13,6 +13,7 @@ import javax.persistence.EntityNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,13 +58,6 @@ public class AlbumService {
         Files.createDirectories(Paths.get(Constants.PATH_PREFIX + "/photos/thumb/" + album.getAlbumId()));
     }
 
-    public AlbumDto deleteAlbum(AlbumDto albumDto) throws Exception {
-        Album album = AlbumMapper.convertToModel(albumDto);
-        this.albumRepository.delete(album);
-        this.deleteAlbumDirectories(album);
-        return AlbumMapper.convertToDto(album);
-    }
-
     private void deleteAlbumDirectories(Album album) throws Exception {
         Files.deleteIfExists(Paths.get(Constants.PATH_PREFIX + "/photos/original/" + album.getAlbumId()));
         Files.deleteIfExists(Paths.get(Constants.PATH_PREFIX + "/photos/thumb/" + album.getAlbumId()));
@@ -89,5 +83,28 @@ public class AlbumService {
             albumDto.setThumbUrls(top4.stream().map(Photo::getThumbUrl).map(c -> Constants.PATH_PREFIX + c).collect(Collectors.toList()));
         }
         return albumDtos;
+    }
+
+    public AlbumDto changeName(Long albumId, AlbumDto albumDto) {
+        Optional<Album> album = this.albumRepository.findById(albumId);
+        if(album.isEmpty()) {
+            throw new NoSuchElementException(String.format("Album ID '%d'가 존재하지 않습니다.", albumId));
+        }
+
+        Album updateAlbum = album.get();
+        updateAlbum.setAlbumName(albumDto.getAlbumName());
+        Album savedAlbum = this.albumRepository.save(updateAlbum);
+        return AlbumMapper.convertToDto(savedAlbum);
+    }
+
+    public void deleteAlbum(Long albumId) throws Exception{
+        Optional<Album> album = this.albumRepository.findById(albumId);
+        if(album.isEmpty()) {
+            throw new NoSuchElementException(String.format("Album ID '%d'가 존재하지 않습니다.", albumId));
+        }
+
+        Album deleteAlbum = album.get();
+        albumRepository.delete(deleteAlbum);
+        this.deleteAlbumDirectories(deleteAlbum);
     }
 }
