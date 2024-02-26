@@ -3,9 +3,9 @@ package com.squarecross.photoalbum.service;
 import com.squarecross.photoalbum.domain.Album;
 import com.squarecross.photoalbum.domain.Photo;
 import com.squarecross.photoalbum.dto.AlbumDto;
+import com.squarecross.photoalbum.dto.PhotoDto;
 import com.squarecross.photoalbum.repository.AlbumRepository;
 import com.squarecross.photoalbum.repository.PhotoRepository;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,11 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +29,9 @@ class AlbumServiceTest {
 
     @Autowired
     AlbumService albumService;
+
+    @Autowired
+    PhotoService photoService;
 
     @Test
     void getAlbum() {
@@ -140,5 +139,11 @@ class AlbumServiceTest {
         assertThrows(EntityNotFoundException.class, () -> {
             albumService.getAlbum(albumId);
         });
+    }
+
+    @Test
+    void testGetPhotoDtl() {
+        PhotoDto photoDto = photoService.getPhoto(3, 10);
+        assertEquals("Kendall.png", photoDto.getFileName());
     }
 }
